@@ -1,4 +1,4 @@
-<h1 style="text-align:center;">Click Rail Configurator</h1>
+<h1 style="text-align:center;">Classic &amp; Ceiling Rail Configurator</h1>
 <h3 style="margin:1.5em auto;width:75%;">Set up the perfect Art Hanging System for your needs in a simple, step-by-step format. <br style="line-height:1.5;">Choose color, quantity, and more, then add it all to your cart at once! <br style="line-height:1.5;">Get everything you need in one place, with Mbs Hanging Systems.</h3>
 <!-- <h4 id="subtotal" style="text-align:center;font-style:normal;">$0.00</h4> -->
 <p style="text-align:center;">
@@ -11,9 +11,11 @@
 		<div class="cd-slider-nav configurator-wrapper">
 			<nav class="configurator">
 				<ul class="choices">
-					<li class="selected"><a href="#0">Art Hanging Rail</a></li>
-					<li><a href="#0">Hanging Cable</a></li>
-					<li><a href="#0">Hook</a></li>
+					<li class="selected"><a href="#0">Art Hanging Rails</a></li>
+					<li><a href="#0">Hanging Cables/Rods</a></li>
+					<!-- <li><a href="#0">Hanging Rods</a></li> -->
+					<li><a href="#0">Cable &amp; Rod Hooks</a></li>
+					<!-- <li><a href="#0">Rod Hooks</a></li> -->
 					<li><a href="#0">Accessories</a></li>
 					<li><a href="#0">Installation Hardware</a></li>
 				</ul>
@@ -34,7 +36,7 @@
 			<li class="rails selected">
 
 			<?php
-				$rails = Mage::getModel('catalog/category')->load(205)->getProductCollection()
+				$rails = Mage::getModel('catalog/category')->load(206)->getProductCollection()
 										 ->addAttributeToSelect('*')
 										 ->addAttributeToFilter('status', 1)
 										 ->addAttributeToFilter('visibility', 4);
@@ -95,7 +97,7 @@
 			<!-- CABLES TAB -->
 			<li class="cables">
 			<?php
-				$cables = Mage::getModel('catalog/category')->load(202)->getProductCollection()
+				$cables = Mage::getModel('catalog/category')->load(209)->getProductCollection()
 										 ->addAttributeToSelect('*')
 										 ->addAttributeToFilter('status', 1)
 										 ->addAttributeToFilter('visibility', 4);
@@ -147,13 +149,129 @@
 				</div>
 				<?php }
 			?>
+			<!-- </li> -->
+
+
+			<!-- RODS TAB -->
+			<!-- <li class="rods"> -->
+			<?php
+				$rods = Mage::getModel('catalog/category')->load(208)->getProductCollection()
+										 ->addAttributeToSelect('*')
+										 ->addAttributeToFilter('status', 1)
+										 ->addAttributeToFilter('visibility', 4);
+				foreach($rods as $rod) { ?>
+				<div class="configurator-item-wrapper">
+					<div class="configurator-item">
+						<div class="img-wrapper">
+							<span class="short-desc"><span><?php echo $rod->getShortDescription(); ?></span></span>
+							<img src="<?php echo Mage::helper('catalog/image')->init($rod, 'small_image')->resize(200,200); ?>" alt="<?php echo $rod->getName(); ?>">
+						</div>
+						<h3><?php echo $rod->getName(); ?></h3>
+						<?php if($rod->isConfigurable()) {
+							$attributes = $rod->getTypeInstance(true)->getConfigurableAttributes($rod);
+							if(count($attributes)) { ?>
+							<ul>
+								<?php foreach ($attributes as $attribute) {
+									$pAtt = $attribute->getProductAttribute();
+									$allProducts = $rod->getTypeInstance(true)->getUsedProducts(null, $rod);
+									$frontValues = array(); ?>
+								<li style="padding: 0 1.25em;"><?php echo $pAtt->getFrontendLabel() ?>
+									<select id="choice<?php echo $rod->getId() ?>" data-id="<?php echo $rod->getFinalPrice() ?>" style="float:right;" onchange="getChoice(this,<?php echo $rod->getData('entity_id') ?>)">
+										<?php foreach($allProducts as $p) {
+											if(!$p->isSaleable()) continue;
+											$out = $p->getAttributeText($pAtt->getName());
+											$sku = $p->getData('entity_id');
+											$choicePrice = Mage::getModel('catalog/product')->load($sku)->getFinalPrice();
+											$priceDiff = $choicePrice - $rod->getFinalPrice();
+											if($priceDiff > 0){$out = $out." + $".$priceDiff;}
+											$frontValues[$out] = $out; ?>
+											<option id="<?php echo $p->getData('entity_id'); ?>" data-id="<?php echo $priceDiff; ?>"><?php echo $frontValues[$out] ?></option>
+										<?php } ?>
+									</select>
+								</li>
+								<?php } ?>
+							</ul>
+							<?php } ?>
+						<?php } ?>
+						<p>
+							<span id="p<?php echo $rod->getData('entity_id') ?>">
+								<label for="qty<?php echo $rod->getProductId() ?>" class="qty-label">Qty</label>
+								<input type="number" min="0" name="product[<?php echo $rod->getProductId() ?>][qty]<?php echo $rod->getProductId() ?>" id="qty<?php if($rod->isConfigurable()) {echo $allProducts[0]->getData('entity_id');} else {echo $rod->getData('entity_id');} ?>" class="input-number" value="0">
+							</span>
+							<span id="span<?php echo $rod->getData('entity_id') ?>">
+								<span class="price" id="price<?php echo $rod->getId() ?>"><?php echo Mage::helper('core')->currency($rod->getFinalPrice(), true, false); ?></span>
+								<input type="checkbox" id="<?php if($rod->isConfigurable()) {echo $allProducts[0]->getData('entity_id');} else {echo $rod->getData('entity_id');} ?>">
+							</span>
+						</p>
+					</div>
+				</div>
+				<?php }
+			?>
 			</li>
 
 
 			<!-- HOOKS TAB -->
 			<li class="hooks">
 			<?php
-				$hooks = Mage::getModel('catalog/category')->load(196)->getProductCollection()
+				$hooks = Mage::getModel('catalog/category')->load(210)->getProductCollection()
+										 ->addAttributeToSelect('*')
+										 ->addAttributeToFilter('status', 1)
+										 ->addAttributeToFilter('visibility', 4);
+				foreach($hooks as $hook) { ?>
+				<div class="configurator-item-wrapper">
+					<div class="configurator-item">
+						<div class="img-wrapper">
+							<span class="short-desc"><span><?php echo $hook->getShortDescription(); ?></span></span>
+							<img src="<?php echo Mage::helper('catalog/image')->init($hook, 'small_image')->resize(200,200); ?>" alt="<?php echo $hook->getName(); ?>">
+						</div>
+						<h3><?php echo $hook->getName(); ?></h3>
+						<?php if($hook->isConfigurable()) {
+							$attributes = $hook->getTypeInstance(true)->getConfigurableAttributes($hook);
+							if(count($attributes)) { ?>
+							<ul>
+								<?php foreach ($attributes as $attribute) {
+									$pAtt = $attribute->getProductAttribute();
+									$allProducts = $hook->getTypeInstance(true)->getUsedProducts(null, $hook);
+									$frontValues = array(); ?>
+								<li style="padding: 0 1.25em;"><?php echo $pAtt->getFrontendLabel() ?>
+									<select id="choice<?php echo $hook->getId() ?>" data-id="<?php echo $hook->getFinalPrice() ?>" style="float:right;" onchange="getChoice(this,<?php echo $hook->getData('entity_id') ?>)">
+										<?php foreach($allProducts as $p) {
+											if(!$p->isSaleable()) continue;
+											$out = $p->getAttributeText($pAtt->getName());
+											$sku = $p->getData('entity_id');
+											$choicePrice = Mage::getModel('catalog/product')->load($sku)->getFinalPrice();
+											$priceDiff = $choicePrice - $hook->getFinalPrice();
+											if($priceDiff > 0){$out = $out." + $".$priceDiff;}
+											$frontValues[$out] = $out; ?>
+											<option id="<?php echo $p->getData('entity_id'); ?>" data-id="<?php echo $priceDiff; ?>"><?php echo $frontValues[$out] ?></option>
+										<?php } ?>
+									</select>
+								</li>
+								<?php } ?>
+							</ul>
+							<?php } ?>
+						<?php } ?>
+						<p>
+							<span id="p<?php echo $hook->getData('entity_id') ?>">
+								<label for="qty<?php echo $hook->getProductId() ?>" class="qty-label">Qty</label>
+								<input type="number" min="0" name="product[<?php echo $hook->getProductId() ?>][qty]<?php echo $hook->getProductId() ?>" id="qty<?php if($hook->isConfigurable()) {echo $allProducts[0]->getData('entity_id');} else {echo $hook->getData('entity_id');} ?>" class="input-number" value="0">
+							</span>
+							<span id="span<?php echo $hook->getData('entity_id') ?>">
+								<span class="price" id="price<?php echo $hook->getId() ?>"><?php echo Mage::helper('core')->currency($hook->getFinalPrice(), true, false); ?></span>
+								<input type="checkbox" id="<?php if($hook->isConfigurable()) {echo $allProducts[0]->getData('entity_id');} else {echo $hook->getData('entity_id');} ?>">
+							</span>
+						</p>
+					</div>
+				</div>
+				<?php }
+			?>
+			<!-- </li> -->
+
+
+			<!-- HOOKS TAB -->
+			<!-- <li class="hooks"> -->
+			<?php
+				$hooks = Mage::getModel('catalog/category')->load(198)->getProductCollection()
 										 ->addAttributeToSelect('*')
 										 ->addAttributeToFilter('status', 1)
 										 ->addAttributeToFilter('visibility', 4);
@@ -207,10 +325,11 @@
 			?>
 			</li>
 
+
 			<!-- ACCESSORIES TAB -->
 			<li class="accessories">
 			<?php
-				$accessories = Mage::getModel('catalog/category')->load(204)->getProductCollection()
+				$accessories = Mage::getModel('catalog/category')->load(200)->getProductCollection()
 										 ->addAttributeToSelect('*')
 										 ->addAttributeToFilter('status', 1)
 										 ->addAttributeToFilter('visibility', 4);
@@ -267,7 +386,7 @@
 			<!-- HARDWARE TAB -->
 			<li class="hardware">
 			<?php
-				$hardwares = Mage::getModel('catalog/category')->load(203)->getProductCollection()
+				$hardwares = Mage::getModel('catalog/category')->load(224)->getProductCollection()
 										 ->addAttributeToSelect('*')
 										 ->addAttributeToFilter('status', 1)
 										 ->addAttributeToFilter('visibility', 4);
@@ -476,8 +595,6 @@
 		};
 	});
 
-jQuery(function() {alert("Running");});
-
 function getChoice(sel, change) {
 	checkboxSpanId = 'span'.concat(change);
 	quantitySpanId = 'p'.concat(change);
@@ -492,7 +609,7 @@ function getChoice(sel, change) {
 	var basePrice = parseFloat(jQuery(sel).attr('data-id'));
 	var priceDiff = parseFloat(jQuery(sel).children('option:selected').attr('data-id'));
 	var newPrice  = basePrice + priceDiff;
-	newPrice = '$'.concat(newPrice);
+	newPrice = '$'.concat(newPrice.toFixed(2));
 
 	console.log(newPrice);
 

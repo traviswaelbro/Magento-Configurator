@@ -1,13 +1,13 @@
 <?php 
 try {
-	$product_ids  = $_REQUEST['productsArray'];
-	$qty = array('1','2','3');
+	$product_ids = $_REQUEST['productsArray'];
+	$quantities  = $_REQUEST['quantitiesArray'];
 	$n = 0;
 
-	$cart = Mage::getSingleton('checkout/session')->getQuote();
+	$cart = Mage::getSingleton('checkout/cart')->init();
 	foreach($product_ids as $product_id) {
 		$product = Mage::getModel('catalog/product')->load($product_id);
-		$cart->addProduct($product, $qty[$n]);
+		$cart->addProduct($product, $quantities[$n]);
 		$n++;
 	}
 	$cart->save();

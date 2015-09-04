@@ -1,0 +1,39 @@
+<?php 
+try {
+	$product_ids = $_REQUEST['productsArray'];
+	$quantities  = $_REQUEST['quantitiesArray'];
+	$n = 0;
+
+	$cart = Mage::getSingleton('checkout/cart')->init();
+	foreach($product_ids as $product_id) {
+		$product = Mage::getModel('catalog/product')->load($product_id);
+
+		if($product->isGrouped()) {
+
+			$super_group = array();
+			$children = $product->getTypeInstance(true)->getAssociatedProducts($product);
+
+			foreach($children as $child) {
+				$super_group[$child->getId()] = $child->getQty();
+			}
+
+			$params = array('super_group' => $super_group);
+			$repeat = $quantities[$n];
+			
+			for($p = 0; $p < $repeat; $p++) {
+				$cart->addProduct($product, $params);
+			}
+
+		} else {
+			$cart->addProduct($product, $quantities[$n]);
+			$n++;
+		}
+
+	}
+	$cart->save();
+	Mage::getSingleton('customer/session')->setCartWasUpdated(true);
+	Mage::getSingleton('core/session')->addSuccess('Art Hanging System added to cart successfully. Enjoy!');
+} catch (Exception $e) {
+	Mage::log($e);
+}
+?>

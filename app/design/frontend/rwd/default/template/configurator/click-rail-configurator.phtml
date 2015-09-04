@@ -1,0 +1,122 @@
+<link rel="stylesheet" href="<?php echo $this->getSkinUrl('css/configurator.css') ?>"> 
+<h1 style="text-align:center;">Click Rail Configurator</h1>
+<h3 style="margin:1.5em auto;width:75%;">Set up the perfect Art Hanging System for your needs in a simple, step-by-step format. <br style="line-height:1.5;">Choose color, quantity, and more, then add it all to your cart at once! <br style="line-height:1.5;">Get everything you need in one place, with Mbs Hanging Systems.</h3>
+
+<?php 
+$n = 0;
+$categories = array(205, 202, 196, 204, 203);
+$titles = array("Select Your<br>Rail",
+				"Select Your<br>Hanging Cables",
+				"Select Your<br>Hooks",
+				"Select Your<br>Accessories",
+				"Select Your<br>Installation Hardware");
+?>
+
+<div class="home-container grid">
+	<div class="cd-hero">
+
+		<div class="cd-slider-nav configurator-wrapper">
+			<nav class="configurator">
+				<ul class="choices">
+				<?php foreach($titles as $title) { ?>
+					<li id="tab<?php echo $n; ?>" <?php if($n == 0) {echo 'class="selected"';} ?>>
+						<a href="#0"><?php echo $title; ?></a>
+					</li>
+					<?php $n++; ?>
+				<?php } ?>
+				</ul>
+			</nav>
+		</div>
+
+		<?php $n = 0; ?>
+		<ul class="cd-hero-slider" id="configurator-panels" style="clear:both;">
+
+			<?php foreach($categories as $category) { ?>
+				<li class="items <?php if($n == 0) {echo 'selected';} ?>">
+					<?php if($n != count($categories) - 1) { ?>
+						<input type="submit" title="Add to Package" class="button btn-cart" onclick="simClick('#tab<?php echo $n+1; ?>')" value="Next" style="display:block;margin:0 auto;"></input>
+					<?php } else { ?>
+						<p style="text-align:center;">
+							<span id="no-products" class="availability notice" style="display:none;font-style:normal;font-weight:normal;">No Products have been added to your selection.<br><br></span>
+							<input type="submit" title="Add to Package" class="button btn-cart" id="finalize" value="Checkout"></input>
+						</p>
+					<?php } ?>
+
+					<?php $items = Mage::getModel('catalog/category')->load($category)->getProductCollection()
+											 ->addAttributeToSelect('*')
+											 ->addAttributeToFilter('status', 1)
+											 ->addAttributeToFilter('visibility', 4); ?>
+					<?php foreach($items as $item) { ?>
+						<div class="configurator-item-wrapper">
+							<div class="configurator-item">
+								<div class="img-wrapper">
+									<span class="short-desc"><span><?php echo $item->getShortDescription(); ?></span></span>
+									<img src="<?php echo Mage::helper('catalog/image')->init($item, 'small_image')->resize(200,200); ?>" alt="<?php echo $item->getName(); ?>">
+								</div>
+								<h3><?php echo $item->getName(); ?></h3>
+								<?php 
+								$allProducts = '';
+
+								if($item->isConfigurable()) {
+									$attributes = $item->getTypeInstance(true)->getConfigurableAttributes($item);
+
+									if(count($attributes)) { ?>
+									<ul>
+										<?php foreach ($attributes as $attribute) {
+											$pAtt = $attribute->getProductAttribute();
+											$allProducts = $item->getTypeInstance(true)->getUsedProducts(null, $item);
+											$frontValues = array(); ?>
+										<li style="padding: 0 1.25em;"><?php echo $pAtt->getFrontendLabel() ?>
+											<select id="choice<?php echo $item->getId() ?>" data-id="<?php echo $item->getFinalPrice() ?>" style="float:right;" onchange="getChoice(this,<?php echo $item->getData('entity_id') ?>)">
+												<?php foreach($allProducts as $p) {
+													if(!$p->isSaleable()) continue;
+													$out = $p->getAttributeText($pAtt->getName());
+													$sku = $p->getData('entity_id');
+													$choicePrice = Mage::getModel('catalog/product')->load($sku)->getFinalPrice();
+													$priceDiff = $choicePrice - $item->getFinalPrice();
+													if($priceDiff > 0){$out = $out." + $".$priceDiff;}
+													$frontValues[$out] = $out; ?>
+													<option id="<?php echo $sku ?>" data-id="<?php echo $priceDiff; ?>"><?php echo $frontValues[$out] ?></option>
+												<?php } ?>
+											</select>
+										</li>
+										<?php } ?>
+									</ul>
+									<?php } ?>
+								<?php } ?>
+								<p>
+									<span id="p<?php echo $item->getData('entity_id') ?>">
+										<label for="qty<?php echo $item->getProductId() ?>" class="qty-label">Qty</label>
+										<input type="number" min="0" name="product[<?php echo $item->getProductId() ?>][qty]<?php echo $item->getProductId() ?>" id="qty<?php if($item->isConfigurable()) {echo $allProducts[0]->getData('entity_id');} else {echo $item->getData('entity_id');} ?>" class="input-number" value="0" onchange="changeQty(p<?php echo $item->getData('entity_id') ?>, span<?php echo $item->getData('entity_id') ?>)">
+									</span>
+									<span id="span<?php echo $item->getData('entity_id') ?>">
+										<span class="price" id="price<?php echo $item->getId() ?>">
+											<?php 
+											if(!$item->isGrouped()) { echo Mage::helper('core')->currency($item->getFinalPrice(), true, false); } 
+											else { 
+											    $price = 0;
+											    $children = $item->getTypeInstance(true)->getAssociatedProducts($item);
+											    foreach($children as $child) {
+											    	$defaultQty = $child->getQty();
+											    	$id = $child->getId();
+											    	$childProduct = Mage::getModel('catalog/product')->load($id);
+										            $price += $childProduct->getPriceModel()->getPrice($childProduct) * $defaultQty;
+											    }
+												echo Mage::helper('core')->currency($price, true, false); } ?></span>
+										<input type="checkbox" style="display:none;" id="<?php if($item->isConfigurable()) {echo $allProducts[0]->getData('entity_id');} else {echo $item->getData('entity_id');} ?>">
+									</span>
+								</p>
+							</div>
+						</div>
+					<?php } $n++; ?>
+				</li>
+			<?php }  ?>
+		</ul>
+	</div>
+</div>
+
+<div id="m-wait" style="display: none;">
+    <p class="loader" id="loading_mask_loader"><img src="http://mbs-hanging-systems.com/skin/frontend/rwd/hanging/images/mana_core/m-wait.gif" alt="Loading..." width="43" height="11"><br>Please wait...</p>
+</div>
+
+<script src="/skin/frontend/rwd/default/js/configurator.js"></script>

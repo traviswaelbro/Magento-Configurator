@@ -115,6 +115,10 @@ $titles = array("Select Your<br>Rail",
 	</div>
 </div>
 
+<div id="image-overlay" onclick="jQuery('#image-overlay').hide(400);" style="display:none; left: 0; position: fixed; top: 0; width: 100%; z-index: 999;">
+	<img src="<?php echo Mage::getModel('catalog/product_media_config')->getMediaUrl( Mage::getModel('catalog/product')->load(1922)->getImage() ); ?>" alt="" style="margin: 0 auto;" />
+</div>
+
 <div id="m-wait" style="display: none;">
     <p class="loader" id="loading_mask_loader"><img src="http://mbs-hanging-systems.com/skin/frontend/rwd/hanging/images/mana_core/m-wait.gif" alt="Loading..." width="43" height="11"><br>Please wait...</p>
 </div>
